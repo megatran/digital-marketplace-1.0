@@ -2,5 +2,7 @@
 
 {% block content %}
     <h1>Product: {{ object.title }}</h1>
+    <p>{{ object.description }}</p>
+    <p> {{ object.price }}</p>
     {{block.super}}
 {% endblock content %}
