@@ -25,9 +25,10 @@ def create_view(request):
         instance = form.save(commit=False)
         instance.sale_price = instance.price
         instance.save()
-    template = "create_view.html"
+    template = "form.html"
     context = {
         "form": form,
+        "submit_btn": "Create Product"
     }
     return render(request, template, context)
 
@@ -47,7 +48,7 @@ def detail_slug_view(request, slug=None):
 def detail_view(request, object_id=None):
     #1 item
     product = get_object_or_404(Product, id=object_id)
-    template = "detail_view.html"
+    template = ""
     context={
         "object": product
     }
@@ -60,10 +61,11 @@ def update_view(request, object_id=None):
     if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
-    template = "update_view.html"
+    template = "form.html"
     context={
         "object": product,
         "form": form,
+        "submit_btn": "Update Product"
     }
     return render(request, template, context)
 
