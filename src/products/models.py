@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save, post_save
+from django.core.urlresolvers import reverse
 from django.utils.text import slugify
 
 # Create your models here.
@@ -21,6 +22,9 @@ class Product(models.Model):
 
     def __unicode__(self):
         return self.title
+    def get_absolute_url(self):
+        view_name = "products:detail_slug"
+        return reverse(view_name, kwargs={"slug": self.slug})
 
 def create_slug(instance, new_slug=None):
     slug = slugify(instance.title)
