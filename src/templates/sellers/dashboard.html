@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Seller Dashboard</h1>
+    <form method="POST" action=""> {% csrf_token %}
+        Rules of the Marketplace
+        <ol>
+            <li>1. Be kind</li>
+            <li>2. Sell well</li>
+            <li>Don't steal</li>
+        </ol>
+
+    {{ form.as_p }}
+        <br />
+        <input type="submit"/>
+    </form>
+{% endblock content %}
