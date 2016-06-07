@@ -17,6 +17,15 @@ class ProductCreateView(SubmitBtnMixin,CreateView):
     success_url = "/products/add/"
     submit_btn = "Add Product"
 
+    def form_valid(self, form):
+        user = self.request.user
+        form.instance.user = user
+        #finish off saving database
+        valid_data = super(ProductCreateView, self).form_valid(form)
+        form.instance.managers.add(user)
+        # add all default users
+        return valid_data
+
 class ProductUpdateView(SubmitBtnMixin, MultiSlugMixin, UpdateView):
     model = Product
     template_name = "form.html"
@@ -24,6 +33,13 @@ class ProductUpdateView(SubmitBtnMixin, MultiSlugMixin, UpdateView):
     success_url = "/products/"
     submit_btn = "Update Product"
 
+    def get_object(self, *args, **kwargs):
+        user = self.request.user
+        obj = super(ProductUpdateView, self).get_object(*args, **kwargs)
+        if obj.user == user or user in obj.managers.all():
+            return obj
+        else:
+            raise Http404
 
 class ProductDetailView(MultiSlugMixin, DetailView):
     model = Product
