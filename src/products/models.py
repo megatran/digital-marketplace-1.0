@@ -34,6 +34,10 @@ class Product(models.Model):
     def get_absolute_url(self):
         view_name = "products:detail_slug"
         return reverse(view_name, kwargs={"slug": self.slug})
+    def get_download(self):
+        view_name = "products:download_slug"
+        url = reverse(view_name, kwargs={"slug":self.slug})
+        return url
 
 def create_slug(instance, new_slug=None):
     slug = slugify(instance.title)
@@ -59,3 +63,14 @@ pre_save.connect(product_pre_save_receiver, sender=Product)
 #         instance.save()
 #
 # post_save.connect(product_post_save_receiver, sender=Product)
+
+class MyProducts(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    products = models.ManyToManyField(Product, blank=True)
+
+    def __unicode__(self):
+        return "%s" %(self.products.count())
+    # fix my productss issue in admin
+    class Meta:
+        verbose_name = "My Products"
+        verbose_name_plural = "My Products"

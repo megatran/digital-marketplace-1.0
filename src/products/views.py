@@ -1,6 +1,12 @@
-from django.http import Http404
+import os
+
+from mimetypes import guess_type
+from django.db.models import Q
+from django.conf import settings
+from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
+from django.core.servers.basehttp import FileWrapper
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
@@ -50,6 +56,27 @@ class ProductUpdateView(ProductManagerMixin, SubmitBtnMixin, MultiSlugMixin, Upd
     #     else:
     #         raise Http404
 
+class ProductDownloadView(MultiSlugMixin, DetailView):
+    model = Product
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj in request.user.myproducts.products.all():
+            filepath = os.path.join(settings.PROTECTED_ROOT, obj.media.path)
+            guessed_type = guess_type(filepath)[0]
+            wrapper = FileWrapper(file(filepath))
+            mimetype = "application/force-download"
+            if guessed_type:
+                mimetype = guessed_type
+            response = HttpResponse(wrapper, content_type=mimetype)
+
+            if not request.GET.get("preview"):
+                response["Content-Disposition"] = "attachment; filename=%s" % (obj.media.name)
+            response["X-SendFile"] = str(obj.media.name)
+            return response
+        else:
+            raise Http404
+
 class ProductDetailView(MultiSlugMixin, DetailView):
     model = Product
 
@@ -65,7 +92,12 @@ class ProductListView(ListView):
     #     return context
     def get_queryset(self, *args, **kwargs):
         qs = super(ProductListView, self).get_queryset(**kwargs)
-        #qs = qs.filter(title__icontains="Product")
+        query = self.request.GET.get("q")
+        if query:
+            qs = qs.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+            ).order_by("title")
         return qs
 
 def create_view(request):
